@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #ffffff;
+            color: #333333;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .date {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .progress-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .progress-label {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: #e8e8e8;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #BF3143;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-percentage {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .task-list {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        #taskInput {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #taskInput:focus {
+            outline: none;
+            border-color: #BF3143;
+        }
+
+        #addButton {
+            padding: 12px 25px;
+            background: #BF3143;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.3s, background 0.3s;
+        }
+
+        #addButton:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background: #a02838;
+        }
+
+        #addButton:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        #addButton:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .task-list {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: move;
+        }
+
+        .task-item.dragging {
+            opacity: 0.5;
+            background: #f9f9f9;
+        }
+
+        .task-item.drag-over {
+            border-top: 3px solid #BF3143;
+        }
+
+        .task-item.completed {
+            opacity: 0.5;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+        }
+
+        .task-item.removing {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        .drag-handle {
+            cursor: move;
+            margin-right: 10px;
+            color: #999;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+            flex-shrink: 0;
+            accent-color: #BF3143;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+            word-break: break-word;
+        }
+
+        .reset-button {
+            width: 100%;
+            padding: 12px;
+            background: #e0e0e0;
+            color: #333333;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+
+        .reset-button:hover {
+            background: #d0d0d0;
+        }
+
+        .history-section {
+            border-top: 2px solid #f0f0f0;
+            padding-top: 20px;
+        }
+
+        .history-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 12px 15px;
+            border-left: 4px solid #BF3143;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .history-date {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .history-stats {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            position: absolute;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Scrollbar styling */
+        .task-list::-webkit-scrollbar,
+        .history-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .task-list::-webkit-scrollbar-track,
+        .history-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .task-list::-webkit-scrollbar-thumb,
+        .history-list::-webkit-scrollbar-thumb {
+            background: #BF3143;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .date {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 15px;
+            }
+
+            .input-section {
+                flex-direction: column;
+            }
+
+            #addButton {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="date" id="currentDate"></div>
+            <div class="progress-section">
+                <div class="progress-label" id="progressLabel">Progress: 0 / 0 tasks completed</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                    <div class="progress-percentage" id="progressPercentage">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="task-list" id="taskList"></div>
+
+            <div class="input-section">
+                <input 
+                    type="text" 
+                    id="taskInput" 
+                    placeholder="Enter a new task..." 
+                    maxlength="200"
+                >
+                <button id="addButton">Add</button>
+            </div>
+
+            <button class="reset-button" id="resetButton">Reset Today</button>
+
+            <div class="history-section">
+                <div class="history-title">📊 History</div>
+                <div class="history-list" id="historyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure
+        let currentData = {
+            date: '',
+            tasks: [],
+            totalTasks: 0,
+            completedTasks: 0,
+            confettiShown: false
+        };
+
+        let history = [];
+
+        // Initialize app
+        function init() {
+            loadData();
+            checkDateChange();
+            initializeDefaultTasks();
+            updateDateDisplay();
+            updateProgress();
+            renderTasks();
+            renderHistory();
+            setupEventListeners();
+        }
+
+        // Initialize default tasks if it's a new day with no tasks
+        function initializeDefaultTasks() {
+            if (currentData.tasks.length === 0 && currentData.totalTasks === 0) {
+                const defaultTasks = [
+                    "Did you do your best before Hazel went to school?",
+                    "Did you check in with Marty at 8:45?",
+                    "Did you take Acetyl L-Carnitine (ALCAR) 1500 mg before workout? (8:30)",
+                    "Did you make your bed?",
+                    "Did you go running before 9:00?",
+                    "Did you eat eggs after workout? (11:00)",
+                    "Did you practice intermittent fasting? (1:30–8:30)",
+                    "Did you create your to-do list for today?",
+                    "Did you start working with focus music at 10:00?",
+                    "Did you only check stocks between 50-60 minutes past the hour?",
+                    "Did you read an English article?",
+                    "Did you study AI?",
+                    "Did you complete Tabbi Daily?",
+                    "Did you speak kindly to your husband and baby?",
+                    "Did you take your vitamins?",
+                    "Did you complete Duolingo?",
+                    "Did you do plank for 100 seconds? (12/1)",
+                    "Did you do Russian Twist 50 x 2 sets? (1 min rest)",
+                    "Did you do Reverse Crunch 15 x 2 sets?",
+                    "Did you do Glute Bridge 15 x 2 sets?",
+                    "Did you complete your skincare routine?",
+                    "Did you write in your gratitude journal?",
+                    "Did you do strength training?",
+                    "Did you stretch before bed?",
+                    "Did you study English with Gilmore Girls? (learn new expressions)",
+                    "Did you complete Tabbi Challenge?",
+                    "Did you organize your desk?",
+                    "Did you work on becoming an influencer for 1 hour?",
+                    "Did you avoid Korean political content? (until 12/10)"
+                ];
+                
+                defaultTasks.forEach((taskText, index) => {
+                    currentData.tasks.push({
+                        id: Date.now() + index,
+                        text: taskText,
+                        completed: false
+                    });
+                });
+                
+                currentData.totalTasks = defaultTasks.length;
+                saveData();
+            }
+        }
+
+        // Get today's date string
+        function getTodayString() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // Update date display
+        function updateDateDisplay() {
+            document.getElementById('currentDate').textContent = formatDate(getTodayString());
+        }
+
+        // Check if date has changed
+        function checkDateChange() {
+            const today = getTodayString();
+            
+            if (currentData.date && currentData.date !== today) {
+                // Save yesterday's data to history
+                if (currentData.totalTasks > 0) {
+                    history.unshift({
+                        date: currentData.date,
+                        totalTasks: currentData.totalTasks,
+                        completedTasks: currentData.completedTasks
+                    });
+                }
+                
+                // Start fresh for new day
+                currentData = {
+                    date: today,
+                    tasks: [],
+                    totalTasks: 0,
+                    completedTasks: 0,
+                    confettiShown: false
+                };
+                
+                saveData();
+            } else if (!currentData.date) {
+                currentData.date = today;
+            }
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('dailyChecklistData');
+            const savedHistory = localStorage.getItem('dailyChecklistHistory');
+            
+            if (saved) {
+                currentData = JSON.parse(saved);
+            }
+            
+            if (savedHistory) {
+                history = JSON.parse(savedHistory);
+            }
+            
+            // Add demo history for preview (remove this section in production)
+            if (history.length === 0) {
+                history = [
+                    {
+                        date: '2025-12-03',
+                        totalTasks: 29,
+                        completedTasks: 27
+                    },
+                    {
+                        date: '2025-12-02',
+                        totalTasks: 29,
+                        completedTasks: 29
+                    },
+                    {
+                        date: '2025-12-01',
+                        totalTasks: 29,
+                        completedTasks: 24
+                    }
+                ];
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('dailyChecklistData', JSON.stringify(currentData));
+            localStorage.setItem('dailyChecklistHistory', JSON.stringify(history));
+        }
+
+        // Add new task
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const taskText = input.value.trim();
+            
+            if (!taskText) return;
+            
+            const task = {
+                id: Date.now(),
+                text: taskText,
+                completed: false
+            };
+            
+            currentData.tasks.push(task);
+            currentData.totalTasks++;
+            
+            input.value = '';
+            updateAddButtonState();
+            
+            saveData();
+            updateProgress();
+            renderTasks();
+        }
+
+        // Complete task
+        function completeTask(taskId) {
+            const task = currentData.tasks.find(t => t.id === taskId);
+            if (!task || task.completed) return;
+            
+            task.completed = true;
+            currentData.completedTasks++;
+            
+            // Add strikethrough style
+            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+            if (taskElement) {
+                taskElement.classList.add('completed');
+                
+                // Remove after 1 second
+                setTimeout(() => {
+                    taskElement.classList.add('removing');
+                    setTimeout(() => {
+                        renderTasks();
+                    }, 300);
+                }, 1000);
+            }
+            
+            saveData();
+            updateProgress();
+            checkForConfetti();
+        }
+
+        // Update progress display
+        function updateProgress() {
+            const { totalTasks, completedTasks } = currentData;
+            const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            document.getElementById('progressLabel').textContent = 
+                `Progress: ${completedTasks} / ${totalTasks} tasks completed (${percentage}% Completed)`;
+            
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            document.getElementById('progressPercentage').textContent = `${percentage}%`;
+        }
+
+        // Render tasks
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            const activeTasks = currentData.tasks.filter(t => !t.completed);
+            
+            if (activeTasks.length === 0) {
+                taskList.innerHTML = '<div class="empty-message">No tasks yet. Add one above!</div>';
+                return;
+            }
+            
+            taskList.innerHTML = activeTasks.map(task => `
+                <div class="task-item" data-task-id="${task.id}" draggable="true">
+                    <span class="drag-handle">⋮⋮</span>
+                    <input 
+                        type="checkbox" 
+                        class="task-checkbox" 
+                        onchange="completeTask(${task.id})"
+                    >
+                    <span class="task-text">${escapeHtml(task.text)}</span>
+                </div>
+            `).join('');
+            
+            setupDragAndDrop();
+        }
+
+        // Render history
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="empty-message">No history yet.</div>';
+                return;
+            }
+            
+            historyList.innerHTML = history.map(entry => {
+                const percentage = Math.round((entry.completedTasks / entry.totalTasks) * 100);
+                return `
+                    <div class="history-item">
+                        <div class="history-date">${formatDate(entry.date)}</div>
+                        <div class="history-stats">
+                            ${entry.completedTasks} / ${entry.totalTasks} tasks completed (${percentage}%)
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Check if confetti should be shown
+        function checkForConfetti() {
+            const { totalTasks, completedTasks, confettiShown } = currentData;
+            
+            if (totalTasks > 0 && completedTasks === totalTasks && !confettiShown) {
+                showConfetti();
+                currentData.confettiShown = true;
+                saveData();
+            }
+        }
+
+        // Show confetti animation
+        function showConfetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#ff1493'];
+            const confettiCount = 100;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-10px';
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = Math.random() * 10 + 5 + 'px';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.opacity = '1';
+                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    confetti.style.animation = `confetti-fall ${2 + Math.random()}s linear forwards`;
+                    confetti.style.zIndex = '9999';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 30);
+            }
+        }
+
+        // Reset today's tasks
+        function resetToday() {
+            if (!confirm('Are you sure you want to reset today\'s tasks? This cannot be undone.')) {
+                return;
+            }
+            
+            currentData.tasks = [];
+            currentData.totalTasks = 0;
+            currentData.completedTasks = 0;
+            currentData.confettiShown = false;
+            
+            saveData();
+            updateProgress();
+            renderTasks();
+        }
+
+        // Update add button state
+        function updateAddButtonState() {
+            const input = document.getElementById('taskInput');
+            const button = document.getElementById('addButton');
+            button.disabled = !input.value.trim();
+        }
+
+        // Setup drag and drop
+        function setupDragAndDrop() {
+            const taskItems = document.querySelectorAll('.task-item');
+            
+            taskItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.task-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            
+            if (this !== draggedElement) {
+                this.classList.add('drag-over');
+            }
+            return false;
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            
+            if (draggedElement !== this) {
+                const draggedId = parseInt(draggedElement.getAttribute('data-task-id'));
+                const targetId = parseInt(this.getAttribute('data-task-id'));
+                
+                const draggedIndex = currentData.tasks.findIndex(t => t.id === draggedId);
+                const targetIndex = currentData.tasks.findIndex(t => t.id === targetId);
+                
+                if (draggedIndex !== -1 && targetIndex !== -1) {
+                    const draggedTask = currentData.tasks.splice(draggedIndex, 1)[0];
+                    currentData.tasks.splice(targetIndex, 0, draggedTask);
+                    
+                    saveData();
+                    renderTasks();
+                }
+            }
+            
+            this.classList.remove('drag-over');
+            return false;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            const input = document.getElementById('taskInput');
+            const addButton = document.getElementById('addButton');
+            const resetButton = document.getElementById('resetButton');
+            
+            addButton.addEventListener('click', addTask);
+            resetButton.addEventListener('click', resetToday);
+            
+            input.addEventListener('input', updateAddButtonState);
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+            
+            // Initial button state
+            updateAddButtonState();
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Check for date change periodically
+        setInterval(() => {
+            checkDateChange();
+            updateDateDisplay();
+        }, 60000); // Check every minute
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
