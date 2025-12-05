@@ -798,10 +798,12 @@
             localStorage.setItem('dailyChecklistHistory', JSON.stringify(history));
         }
         
-        // Save user's default task list (all tasks, regardless of completion status)
+        // Save user's default task list template (only uncompleted tasks are the template)
         function saveUserDefaultTasks() {
-            const allTaskTexts = currentData.tasks.map(t => t.text);
-            localStorage.setItem('userDefaultTasks', JSON.stringify(allTaskTexts));
+            const activeTaskTexts = currentData.tasks
+                .filter(t => !t.completed)
+                .map(t => t.text);
+            localStorage.setItem('userDefaultTasks', JSON.stringify(activeTaskTexts));
         }
 
         // Add new task
