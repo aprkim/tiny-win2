@@ -1105,6 +1105,7 @@
                 'Reset Today',
                 'Are you sure you want to reset today\'s tasks? This cannot be undone.',
                 () => {
+                    console.log('=== RESET CALLBACK EXECUTING ===');
                     currentData.tasks = [];
                     currentData.totalTasks = 0;
                     currentData.completedTasks = 0;
@@ -1246,14 +1247,12 @@
 
         let draggedElement = null;
         let editModeEnabled = false;
-        let confirmCallback = null;
 
         // Custom confirmation modal
         function showConfirmModal(title, message, onConfirm) {
             console.log('showConfirmModal called with:', title);
             document.getElementById('confirmTitle').textContent = title;
             document.getElementById('confirmMessage').textContent = message;
-            confirmCallback = onConfirm;
             document.getElementById('confirmModal').classList.remove('hidden');
             
             // Remove old event listener and add new one
@@ -1261,23 +1260,21 @@
             const newConfirmBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
             
+            // Store callback in closure, not global variable
             newConfirmBtn.onclick = () => {
                 console.log('Confirm button clicked, executing callback');
                 closeConfirmModal();
-                if (confirmCallback) {
-                    console.log('Calling confirmCallback');
-                    const callback = confirmCallback;
-                    confirmCallback = null;
-                    callback();
+                if (onConfirm) {
+                    console.log('Calling onConfirm callback');
+                    onConfirm();
                 } else {
-                    console.log('No confirmCallback set!');
+                    console.log('No onConfirm callback provided!');
                 }
             };
         }
 
         function closeConfirmModal() {
             document.getElementById('confirmModal').classList.add('hidden');
-            confirmCallback = null;
         }
 
         function toggleEditMode() {
