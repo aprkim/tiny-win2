@@ -721,12 +721,9 @@
 
         // Initialize default tasks if it's a new day with no tasks
         function initializeDefaultTasks() {
-            // Only load default tasks if this is first time AND no template was selected
-            // (This function now mainly exists for compatibility)
-            if (currentData.tasks.length === 0 && currentData.totalTasks === 0) {
-                // Don't auto-load any tasks - user should use setup flow
-                return;
-            }
+            // This function is now a no-op since we use the setup flow
+            // Tasks are loaded from localStorage or setup modal
+            return;
         }
 
         // Get today's date string
