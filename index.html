@@ -1100,31 +1100,31 @@
                 'Are you sure you want to reset today\'s tasks? This cannot be undone.',
                 () => {
                     currentData.tasks = [];
-            currentData.totalTasks = 0;
-            currentData.completedTasks = 0;
-            currentData.confettiShown = false;
-            
-            // Turn off edit mode if it's on
-            if (editModeEnabled) {
-                toggleEditMode();
-            }
-            
-            // Reload user's saved default tasks
-            const savedDefaultTasks = localStorage.getItem('userDefaultTasks');
-            console.log('Resetting - saved default tasks:', savedDefaultTasks);
-            if (savedDefaultTasks) {
-                const taskTexts = JSON.parse(savedDefaultTasks);
-                console.log('Parsed task texts:', taskTexts);
-                taskTexts.forEach((taskText, index) => {
-                    currentData.tasks.push({
-                        id: Date.now() + index,
-                        text: taskText,
-                        completed: false
-                    });
-                });
-                currentData.totalTasks = taskTexts.length;
-            }
-            
+                    currentData.totalTasks = 0;
+                    currentData.completedTasks = 0;
+                    currentData.confettiShown = false;
+                    
+                    // Turn off edit mode if it's on
+                    if (editModeEnabled) {
+                        toggleEditMode();
+                    }
+                    
+                    // Reload user's saved default tasks
+                    const savedDefaultTasks = localStorage.getItem('userDefaultTasks');
+                    console.log('Resetting - saved default tasks:', savedDefaultTasks);
+                    if (savedDefaultTasks) {
+                        const taskTexts = JSON.parse(savedDefaultTasks);
+                        console.log('Parsed task texts:', taskTexts);
+                        taskTexts.forEach((taskText, index) => {
+                            currentData.tasks.push({
+                                id: Date.now() + index,
+                                text: taskText,
+                                completed: false
+                            });
+                        });
+                        currentData.totalTasks = taskTexts.length;
+                    }
+                    
                     saveData();
                     updateProgress();
                     renderTasks();
