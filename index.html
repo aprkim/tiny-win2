@@ -87,6 +87,13 @@
             transition: all 0.3s;
         }
 
+        .template-container:has(.template-option.selected) .template-option:not(.selected):hover {
+            /* Disable hover effect when a template is already selected */
+            border-color: #e0e0e0;
+            background: white;
+            opacity: 1;
+        }
+
         .template-option:hover:not(.selected) {
             border-color: #BF3143;
             background: #fff5f7;
@@ -225,15 +232,15 @@
 
         .edit-mode-toggle {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background: white;
             border: 2px solid #e0e0e0;
             color: #666;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: background 0.3s, border-color 0.3s, color 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -248,9 +255,9 @@
         }
 
         .edit-mode-toggle.active {
-            background: #BF3143;
+            background: #333;
             color: white;
-            border-color: #BF3143;
+            border-color: #333;
         }
 
         .edit-mode-toggle:disabled {
@@ -413,15 +420,15 @@
 
         .change-template-button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background: white;
-            border: 1px solid #d0d0d0;
+            border: 2px solid #d0d0d0;
             color: #888;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s, border-color 0.3s, color 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -529,15 +536,15 @@
 
         .reset-button {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             background: #BF3143;
             color: white;
-            border: none;
+            border: 2px solid #BF3143;
             border-radius: 10px;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.3s, box-shadow 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -555,17 +562,13 @@
 
         .reset-button:hover {
             background: #a02838;
-            transform: translateY(-1px);
             box-shadow: 0 4px 8px rgba(191, 49, 67, 0.2);
         }
 
-        .reset-button:active {
-            transform: translateY(0);
-        }
-
-        /* Dim Reset Today button when user is typing */
+        /* Dim Reset Today button when user is typing or in edit mode */
         #taskInput:focus ~ .reset-button,
-        body:has(#taskInput:focus) .reset-button {
+        body:has(#taskInput:focus) .reset-button,
+        body:has(.edit-mode) .reset-button {
             opacity: 0.3;
             pointer-events: none;
         }
@@ -1130,7 +1133,7 @@
                 const taskElements = document.querySelectorAll('.task');
                 if (taskElements.length > 0) {
                     const lastTask = taskElements[taskElements.length - 1];
-                    lastTask.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    lastTask.scrollIntoView({ behavior: 'smooth', block: 'end' });
                 }
             }, 0);
         }
@@ -1448,7 +1451,16 @@
             // Save on Enter or blur
             const saveEdit = () => {
                 const newText = input.value.trim();
-                if (newText && newText !== task.text) {
+                if (newText === '') {
+                    // Delete task if text is empty
+                    currentData.tasks = currentData.tasks.filter(t => t.id !== taskId);
+                    if (!task.completed) {
+                        currentData.totalTasks--;
+                    }
+                    saveData();
+                    saveUserDefaultTasks();
+                    updateProgress();
+                } else if (newText !== task.text) {
                     task.text = newText;
                     saveData();
                     saveUserDefaultTasks();
@@ -1532,7 +1544,7 @@
             if (editModeEnabled) {
                 taskList.classList.add('edit-mode');
                 toggleButton.classList.add('active');
-                toggleButton.innerHTML = '<span>Done Editing</span>';
+                toggleButton.innerHTML = editIcon + '<span>Done Editing</span>';
             } else {
                 taskList.classList.remove('edit-mode');
                 toggleButton.classList.remove('active');
